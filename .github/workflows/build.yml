@@ -1,0 +1,101 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  # =========================================================
+  # Build Job
+  # =========================================================
+  build:
+    name: CMake - ${{ matrix.platform[0] }} - ${{ matrix.platform[2] }} - ${{ matrix.platform[3] }}
+    runs-on: ${{ matrix.platform[1] }}
+    strategy:
+      matrix:
+        platform:
+          - [windows, windows-latest, msvc, Debug]
+          - [windows, windows-latest, msvc, Release]
+          - [windows, windows-latest, gcc, Debug]
+          - [windows, windows-latest, gcc, Release]
+          - [windows, windows-latest, clang, Debug]
+          - [windows, windows-latest, clang, Release]
+          - [linux, ubuntu-latest, gcc, Debug]
+          - [linux, ubuntu-latest, gcc, Release]
+          - [linux, ubuntu-latest, clang, Debug]
+          - [linux, ubuntu-latest, clang, Release]
+    env:
+      OPERATING_SYSTEM: ${{ matrix.platform[0] }}
+      DISTRIBUTION: ${{ matrix.platform[1] }}
+      COMPILER: ${{ matrix.platform[2] }}
+      BUILD_TYPE: ${{ matrix.platform[3] }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install Clang
+        if: matrix.platform[2] == 'clang'
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "17.0"
+
+      - name: Install CMake
+        uses: lukka/get-cmake@latest
+        
+      - name: Configure
+        shell: bash
+        run: |
+          if [ "${{ matrix.platform[2] }}" == "msvc" ]; then
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.platform[3] }} -G "Visual Studio 17 2022" -DCMAKE_CXX_COMPILER_TARGET=x86_64-pc-${{ matrix.platform[0] }}-msvc -DCMAKE_C_COMPILER_TARGET=x86_64-pc-${{ matrix.platform[0] }}-msvc
+          elif [ "${{ matrix.platform[2] }}" == "clang" ]; then
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.platform[3] }} -G Ninja -DCMAKE_CC=clang -DCMAKE_CXX=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_COMPILER_TARGET=x86_64-pc-${{ matrix.platform[0] }}-gnu -DCMAKE_C_COMPILER_TARGET=x86_64-pc-${{ matrix.platform[0] }}-gnu
+          elif [ "${{ matrix.platform[2] }}" == "gcc" ]; then
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.platform[3] }} -G Ninja -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_COMPILER_TARGET=x86_64-pc-${{ matrix.platform[0] }}-gnu -DCMAKE_C_COMPILER_TARGET=x86_64-pc-${{ matrix.platform[0] }}-gnu
+          fi
+
+      - name: Build
+        run: cmake --build build --parallel --config ${{ matrix.platform[3] }}
+
+      - name: Test
+        run: ctest --test-dir build --build-config ${{ matrix.platform[3] }} --output-on-failure
+  
+  # =========================================================
+  # Clang Format Job
+  # =========================================================
+  clang-format:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up clang-format
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format
+
+    - name: Check code formatting
+      run: find src \( -name '*.cpp' -o -name '*.hpp' \) -exec clang-format -Werror --style=file -i {} +
+
+  # =========================================================
+  # Clang Tidy Job
+  # =========================================================
+  clang-tidy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install Clang
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "17.0"
+
+      - name: Install CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Static code analysis
+        run: |
+          cmake -S . -B build -DCMAKE_CXX_CLANG_TIDY="clang-tidy" -DCMAKE_BUILD_TYPE=Debug -G Ninja -DCMAKE_CC=clang -DCMAKE_CXX=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_COMPILER_TARGET=x86_64-pc-linux-gnu -DCMAKE_C_COMPILER_TARGET=x86_64-pc-linux-gnu
+          cmake --build build --parallel --config Debug
