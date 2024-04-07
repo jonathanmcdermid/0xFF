@@ -1,2 +1,21 @@
 cmake_minimum_required(VERSION 3.14)
-project(0xFF VERSION 3.1.0)
+project(0xFF)
+set(CMAKE_CXX_STANDARD 20)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+    set(CMAKE_CXX_FLAGS "/WX /W4 /DWIN32 /D_WINDOWS /GR /EHsc /utf-8")
+    set(CMAKE_CXX_FLAGS_DEBUG "/Zi /Ob0 /Od /RTC1 /Zi")
+    set(CMAKE_CXX_FLAGS_RELEASE "/Ox /Ob2 /DNDEBUG")
+elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "-Wall -Werror -Wfatal-errors -Wold-style-cast -Wextra -pedantic")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+else()
+    message(FATAL_ERROR "Unable to identify compiler.")
+endif()
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $<1:${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}>)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $<1:${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}>)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}>)
+
+add_subdirectory(src)
