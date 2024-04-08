@@ -41,6 +41,13 @@ jobs:
 
       - name: Install CMake
         uses: lukka/get-cmake@latest
+
+      - name: Install Curl with Vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          ./vcpkg install curl
         
       - name: Configure
         shell: bash
