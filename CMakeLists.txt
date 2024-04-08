@@ -9,7 +9,7 @@ set(CMAKE_TOOLCHAIN_FILE ${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake CACHE ST
 # Include vcpkg CMake integration
 include(${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 
-# Install vcpkg packages
+# Find vcpkg packages
 find_package(CURL REQUIRED)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
