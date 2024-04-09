@@ -1,0 +1,11 @@
+include(FetchContent)
+FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip)
+FetchContent_MakeAvailable(googletest)
+
+set(TARGET_NAME "common_test")
+file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+add_executable(${TARGET_NAME} ${SOURCES})
+set_property(TARGET ${TARGET_NAME} PROPERTY FOLDER "tests")
+target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR})
+target_link_libraries(${TARGET_NAME} PUBLIC GTest::gtest)
+add_test(NAME ${TARGET_NAME} COMMAND ${TARGET_NAME} ${CMAKE_SOURCE_DIR})
