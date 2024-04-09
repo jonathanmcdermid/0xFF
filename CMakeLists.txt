@@ -13,6 +13,10 @@ include(${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 # Find vcpkg packages
 find_package(CURL REQUIRED)
 
+include(FetchContent)
+FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip)
+FetchContent_MakeAvailable(googletest)
+
 if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS "/WX /W4 /DWIN32 /D_WINDOWS /GR /EHsc /utf-8")
     set(CMAKE_CXX_FLAGS_DEBUG "/Zi /Ob0 /Od /RTC1 /Zi")
