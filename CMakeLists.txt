@@ -20,6 +20,10 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang
     set(CMAKE_CXX_FLAGS "-Wall -Werror -Wfatal-errors -Wold-style-cast -Wextra -pedantic")
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+
+    if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    endif()
 else()
     message(FATAL_ERROR "Unable to identify compiler.")
 endif()
