@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(0xFF)
 set(CMAKE_CXX_STANDARD 20)
+enable_testing()
 
 # Set the path to the vcpkg toolchain file
 set(VCPKG_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg)
